@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
 import { Providers } from "@/lib/providers";
+import "./globals.css";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -11,16 +9,16 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "LiveScore — Football Live Scores & Results",
-    template: "%s | LiveScore",
-  },
-  description: "Live football scores, fixtures, standings, and match details. Track your favorite teams and leagues in real time.",
-  openGraph: {
-    title: "LiveScore — Football Live Scores & Results",
-    description: "Live football scores, fixtures, standings, and match details.",
-    type: "website",
-  },
+  title: "Rain for Sleeping — Remotion Video Studio",
+  description:
+    "Generate 4K ambient rain videos with Remotion, canvas particle physics, and programmatic thunder audio.",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -30,12 +28,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} dark`}>
-      <body className="min-h-screen flex flex-col antialiased">
-        <Providers>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </Providers>
+      <body className="min-h-screen antialiased">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

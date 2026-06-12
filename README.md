@@ -1,136 +1,101 @@
-# LiveScore — Football Live Scores
+# Rain for Sleeping — Remotion Video Studio
 
-A modern, premium football live score web app built with Next.js 15+, TypeScript, Tailwind CSS, Shadcn/ui, and Supabase.
-
-## Features
-
-- **Live Matches** — Real-time scores with auto-refresh (15-30s intervals)
-- **Fixtures** — Browse matches by date with a date switcher
-- **Match Details** — Full match page with events timeline, lineups, statistics
-- **Standings** — League tables for top European leagues
-- **Search** — Find teams and leagues instantly
-- **Favorites** — Save favorite teams and leagues (requires Supabase auth)
-- **Authentication** — Sign up / sign in with Supabase Auth
-- **Dashboard** — Personal dashboard with favorite teams and leagues
-- **Dark Theme** — Premium dark sports UI, mobile-first design
-- **Mock Data** — Works without an API key using built-in mock data
+A Next.js App Router project integrated with Remotion to programmatically generate 4K, 60fps ambient rain videos for YouTube. The composition uses a deterministic HTML5 Canvas particle system, seeded thunder/lightning events, and synchronized audio loops.
 
 ## Tech Stack
 
-- **Next.js 16** (App Router, Server Components)
-- **TypeScript**
-- **Tailwind CSS 4**
-- **Shadcn/ui** (base-nova style)
-- **Supabase** (Auth + Database)
-- **TanStack React Query** (data fetching + caching)
-- **Lucide Icons**
-- **date-fns**
-
-## Getting Started
-
-### 1. Install dependencies
-
-```bash
-npm install
-```
-
-### 2. Set up environment variables
-
-Copy `.env.example` to `.env.local` and fill in your values:
-
-```bash
-cp .env.example .env.local
-```
-
-Required variables:
-
-| Variable | Description |
-|----------|-------------|
-| `FOOTBALL_API_KEY` | API key from [api-football.com](https://www.api-football.com/) (optional — app works with mock data) |
-| `FOOTBALL_API_HOST` | API host (default: `v3.football.api-sports.io`) |
-| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL (optional for basic browsing) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anon key (optional for basic browsing) |
-
-### 3. Set up Supabase (optional)
-
-If you want auth and favorites:
-
-1. Create a [Supabase project](https://supabase.com)
-2. Run the SQL schema in `supabase/schema.sql` in the Supabase SQL editor
-3. Add your Supabase URL and anon key to `.env.local`
-
-### 4. Run the dev server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
+- Next.js (App Router, TypeScript, Tailwind CSS)
+- Remotion (`@remotion/player`, `@remotion/cli`, `@remotion/google-fonts`, `@remotion/bundler`, `@remotion/renderer`)
+- HTML5 Canvas API for high-performance rain physics
 
 ## Project Structure
 
 ```
 src/
-├── app/                    # Next.js App Router pages
-│   ├── api/football/       # API route handlers (server-side)
-│   ├── auth/               # Sign in / Sign up pages
-│   ├── dashboard/          # User dashboard
-│   ├── fixtures/           # Fixtures by date
-│   ├── live/               # Live matches
-│   ├── match/[id]/         # Match details
-│   ├── search/             # Search teams & leagues
-│   ├── standings/          # League standings
-│   └── page.tsx            # Homepage
-├── components/             # Reusable UI components
-│   ├── ui/                 # Shadcn/ui primitives
-│   ├── match-card.tsx      # Match score card
-│   ├── match-list.tsx      # Grouped match list
-│   ├── navbar.tsx          # Top navigation
-│   ├── footer.tsx          # Footer
-│   ├── standings-table.tsx # Standings table
-│   ├── search-bar.tsx      # Search input
-│   └── ...
-├── hooks/                  # Custom React hooks
-│   ├── use-auth.ts         # Supabase auth hook
-│   └── use-favorites.ts   # Favorites CRUD hooks
-├── lib/                    # Utilities & config
-│   ├── supabase/           # Supabase client setup
-│   ├── providers.tsx       # React Query provider
-│   └── utils.ts            # cn() utility
-├── services/               # API service layer
-│   ├── football.ts         # Unified service (API + fallback)
-│   ├── football-api.ts     # Real API client with mappers
-│   └── mock-data.ts        # Mock/seed data
-└── types/                  # TypeScript type definitions
-    └── football.ts         # All football data types
-supabase/
-└── schema.sql              # Database schema + RLS policies
+├── app/
+│   ├── page.tsx                 # Dashboard with Remotion Player + render controls
+│   └── api/render/route.ts      # Server-side Remotion bundle + render API
+├── components/
+│   ├── RainCanvas.tsx           # Canvas particle rain system
+│   ├── RainPreviewPlayer.tsx    # Browser preview wrapper
+│   └── RenderDashboard.tsx      # Render progress UI
+├── lib/
+│   ├── render-jobs.ts           # In-memory render job tracking
+│   └── render-video.ts          # Remotion bundle + render pipeline
+└── remotion/
+    ├── index.ts                 # Remotion entry point
+    ├── Root.tsx                 # Composition registration
+    ├── RainComposition.tsx      # Main video composition
+    ├── constants.ts             # 4K timing + particle constants
+    └── thunder.ts               # Seeded thunder scheduling
+public/
+└── audio/
+    ├── heavy-rain.mp3
+    └── thunder.mp3
 ```
 
-## Pages
+## Setup
 
-| Route | Description |
-|-------|-------------|
-| `/` | Homepage with live/today/upcoming/finished tabs |
-| `/live` | All live matches with auto-refresh |
-| `/fixtures` | Fixtures by date with date picker |
-| `/match/[id]` | Match details (events, lineups, stats) |
-| `/standings` | League standings table |
-| `/search` | Search teams and leagues |
-| `/dashboard` | User favorites dashboard |
-| `/auth/sign-in` | Sign in page |
-| `/auth/sign-up` | Sign up page |
+```bash
+# 1. Install dependencies
+npm install
 
-## Football API
+# 2. Start the Next.js dashboard
+npm run dev
 
-The app uses [API-Football](https://www.api-football.com/) by default. The API layer is abstracted so you can swap providers:
+# 3. Open Remotion Studio (optional, for frame-by-frame editing)
+npm run remotion
+```
 
-- `services/football-api.ts` — Raw API calls with typed mappers
-- `services/football.ts` — Unified service with mock fallback
-- `services/mock-data.ts` — Mock data for development
+Visit [http://localhost:3000](http://localhost:3000) to preview the composition and trigger a render.
 
-All API calls go through Next.js API route handlers (`/api/football/*`) to keep your API key server-side.
+## Mobile testing (Cursor mobile web)
 
-## License
+1. Start the dev server (listens on all interfaces):
+   ```bash
+   npm run dev:mobile
+   ```
+2. In Cursor, **forward port `3000`** (Ports panel).
+3. Open the forwarded HTTPS URL on your phone.
+4. Go to **`/mobile`** for the lightweight test page, or stay on **`/`** (auto mobile mode).
+5. Tap play on the **instant MP4 preview** (`/mobile-demo.mp4`).
 
-MIT
+Health check: `GET /api/health`
+
+## Rendering
+
+### Dashboard API
+
+1. Click **Render 4K Video** on the dashboard.
+2. The API creates a background job and returns a `jobId`.
+3. Poll `GET /api/render?jobId=<id>` for progress.
+4. When complete, download `/public/output.mp4`.
+
+### CLI (local)
+
+```bash
+npm run render:local
+```
+
+## Composition Specs
+
+| Setting | Value |
+| --- | --- |
+| Resolution | 3840 × 2160 (4K UHD) |
+| Frame rate | 60 fps |
+| Duration | 18,000 frames (5 minutes) |
+| Rain particles | 2,800 canvas droplets |
+| Thunder cadence | Every 45–60 seconds (seeded) |
+
+## Audio Assets
+
+Replace the generated placeholder files in `public/audio/` with your own high-quality loops:
+
+- `heavy-rain.mp3` — continuous ambient rain bed (looped)
+- `thunder.mp3` — short thunder rumble clips (triggered programmatically)
+
+## Notes
+
+- The canvas particle system is fully deterministic via Remotion's `random()` seeding, so identical frames always produce identical output during server renders.
+- Full 4K renders are CPU/GPU intensive. Allow several minutes for a 5-minute export.
+- For production deployments, consider moving renders to a dedicated worker or Remotion Lambda instead of the Next.js API route.
