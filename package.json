@@ -13,7 +13,8 @@
     "render:mobile-demo": "remotion render src/remotion/index.ts RainForSleeping public/mobile-demo.mp4 --frames=0-899 --scale=0.28",
     "render:youtube-segment": "remotion render src/remotion/index.ts RainForSleeping public/youtube-segments/segment-test.mp4 --props='{\"seed\":1200,\"segmentIndex\":1}' --scale=0.5 --frames=0-1799",
     "build:youtube-10h": "bash scripts/build-youtube-10h.sh",
-    "build:youtube-1h-test": "YOUTUBE_SEGMENTS=2 YOUTUBE_SEGMENT_MINUTES=30 YOUTUBE_SCALE=0.28 YOUTUBE_EVERY_NTH_FRAME=2 YOUTUBE_OUTPUT=public/youtube-1hour-test.mp4 bash scripts/build-youtube-10h.sh"
+    "build:youtube-1h-test": "YOUTUBE_SEGMENTS=2 YOUTUBE_SEGMENT_MINUTES=30 YOUTUBE_SCALE=0.28 YOUTUBE_EVERY_NTH_FRAME=2 YOUTUBE_OUTPUT=public/youtube-1hour-test.mp4 bash scripts/build-youtube-10h.sh",
+    "build:youtube-10m-test": "YOUTUBE_SEGMENTS=1 YOUTUBE_SEGMENT_MINUTES=10 YOUTUBE_SCALE=0.28 YOUTUBE_EVERY_NTH_FRAME=2 YOUTUBE_OUTPUT=public/youtube-10min-test.mp4 bash scripts/build-youtube-10h.sh"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
