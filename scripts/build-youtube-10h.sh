@@ -7,8 +7,9 @@ set -euo pipefail
 SEGMENTS="${YOUTUBE_SEGMENTS:-20}"
 SEGMENT_MINUTES="${YOUTUBE_SEGMENT_MINUTES:-30}"
 SCALE="${YOUTUBE_SCALE:-0.5}"
+EVERY_NTH="${YOUTUBE_EVERY_NTH_FRAME:-1}"
 SEG_DIR="public/youtube-segments"
-OUTPUT="public/youtube-10hours-unique.mp4"
+OUTPUT="${YOUTUBE_OUTPUT:-public/youtube-10hours-unique.mp4}"
 CONCAT_LIST="${SEG_DIR}/concat-list.txt"
 
 mkdir -p "$SEG_DIR"
@@ -28,9 +29,13 @@ for i in $(seq 1 "$SEGMENTS"); do
   fi
 
   echo "    [render] Segment ${i}/${SEGMENTS} (seed=${SEED})..."
-  npx remotion render src/remotion/index.ts RainForSleeping "$SEG_FILE" \
-    --props="{\"seed\":${SEED},\"segmentIndex\":${i}}" \
-    --scale="${SCALE}"
+  RENDER_ARGS=(render src/remotion/index.ts RainForSleeping "$SEG_FILE"
+    --props="{\"seed\":${SEED},\"segmentIndex\":${i}}"
+    --scale="${SCALE}")
+  if [[ "$EVERY_NTH" != "1" ]]; then
+    RENDER_ARGS+=(--every-nth-frame="${EVERY_NTH}")
+  fi
+  ./node_modules/.bin/remotion "${RENDER_ARGS[@]}"
 done
 
 echo ""
