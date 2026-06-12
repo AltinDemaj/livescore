@@ -6,6 +6,14 @@ const nextConfig: NextConfig = {
     "@remotion/renderer",
     "@remotion/cli",
   ],
+  allowedDevOrigins: [
+    "*.cursor.app",
+    "*.cursor.com",
+    "*.cursor.sh",
+    "*.github.dev",
+    "*.ngrok-free.app",
+    "*.ngrok.io",
+  ],
 };
 
 export default nextConfig;

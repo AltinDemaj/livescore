@@ -1,7 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { MobileRainPreview } from "@/components/MobileRainPreview";
 import { RenderDashboard } from "@/components/RenderDashboard";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 import {
   COMPOSITION_FPS,
   COMPOSITION_HEIGHT,
@@ -25,6 +28,7 @@ const RainPreviewPlayer = dynamic(
 );
 
 export const HomeDashboard: React.FC = () => {
+  const isMobile = useIsMobile();
   const durationMinutes = DEFAULT_DURATION_IN_FRAMES / COMPOSITION_FPS / 60;
 
   return (
@@ -33,30 +37,51 @@ export const HomeDashboard: React.FC = () => {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
 
       <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <header className="mb-10 max-w-3xl">
+        <header className="mb-8 max-w-3xl sm:mb-10">
           <p className="text-sm uppercase tracking-[0.45em] text-sky-100/50">
             Remotion Studio
           </p>
-          <h1 className="mt-3 text-4xl font-light tracking-tight text-white sm:text-5xl">
+          <h1 className="mt-3 text-3xl font-light tracking-tight text-white sm:text-5xl">
             Rain for Sleeping Video Generator
           </h1>
-          <p className="mt-4 text-base leading-7 text-white/60">
+          <p className="mt-4 text-sm leading-7 text-white/60 sm:text-base">
             Preview the ambient rain composition in the browser, then export a
             YouTube-ready 4K video with synchronized rain ambience and
             programmatic thunder events.
           </p>
+          {isMobile ? (
+            <p className="mt-3 text-sm text-sky-200/80">
+              Mobile mode: instant MP4 preview below. Full Remotion player is
+              desktop-only.
+            </p>
+          ) : null}
         </header>
 
+        {isMobile ? (
+          <div className="mb-8">
+            <MobileRainPreview />
+            <Link
+              href="/mobile"
+              className="mt-4 inline-block text-sm text-sky-300"
+            >
+              Open dedicated mobile test page →
+            </Link>
+          </div>
+        ) : null}
+
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-white">Live Preview</h2>
-              <p className="text-xs uppercase tracking-[0.25em] text-white/45">
-                {COMPOSITION_WIDTH}×{COMPOSITION_HEIGHT} · {COMPOSITION_FPS}fps
-              </p>
-            </div>
-            <RainPreviewPlayer />
-          </section>
+          {!isMobile ? (
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-medium text-white">Live Preview</h2>
+                <p className="text-xs uppercase tracking-[0.25em] text-white/45">
+                  {COMPOSITION_WIDTH}×{COMPOSITION_HEIGHT} · {COMPOSITION_FPS}
+                  fps
+                </p>
+              </div>
+              <RainPreviewPlayer />
+            </section>
+          ) : null}
 
           <section className="space-y-6">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
@@ -87,7 +112,14 @@ export const HomeDashboard: React.FC = () => {
               </dl>
             </div>
 
-            <RenderDashboard />
+            {!isMobile ? (
+              <RenderDashboard />
+            ) : (
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/55">
+                4K export is disabled on mobile. Use a desktop session or CLI
+                render when ready.
+              </div>
+            )}
           </section>
         </div>
       </div>

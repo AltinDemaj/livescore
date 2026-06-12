@@ -49,6 +49,19 @@ npm run remotion
 
 Visit [http://localhost:3000](http://localhost:3000) to preview the composition and trigger a render.
 
+## Mobile testing (Cursor mobile web)
+
+1. Start the dev server (listens on all interfaces):
+   ```bash
+   npm run dev:mobile
+   ```
+2. In Cursor, **forward port `3000`** (Ports panel).
+3. Open the forwarded HTTPS URL on your phone.
+4. Go to **`/mobile`** for the lightweight test page, or stay on **`/`** (auto mobile mode).
+5. Tap play on the **instant MP4 preview** (`/mobile-demo.mp4`).
+
+Health check: `GET /api/health`
+
 ## Rendering
 
 ### Dashboard API
