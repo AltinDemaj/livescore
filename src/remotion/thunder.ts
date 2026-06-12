@@ -32,7 +32,7 @@ export const getThunderEvents = (
       frame,
       flashDuration:
         6 + Math.floor(random(`thunder-flash-${seed}-${index}`) * 10),
-      peakOpacity: 0.35 + random(`thunder-opacity-${seed}-${index}`) * 0.35,
+      peakOpacity: 0.45 + random(`thunder-opacity-${seed}-${index}`) * 0.4,
       audioVolume: 0.65 + random(`thunder-volume-${seed}-${index}`) * 0.3,
     });
 
@@ -43,6 +43,33 @@ export const getThunderEvents = (
 
     frame += Math.floor(interval);
     index += 1;
+  }
+
+  if (durationInFrames <= 20 * COMPOSITION_FPS) {
+    const previewStrikes: ThunderEvent[] = [
+      {
+        frame: Math.floor(2.8 * COMPOSITION_FPS),
+        flashDuration: 10,
+        peakOpacity: 0.82,
+        audioVolume: 0.85,
+      },
+      {
+        frame: Math.floor(6.5 * COMPOSITION_FPS),
+        flashDuration: 12,
+        peakOpacity: 0.68,
+        audioVolume: 0.8,
+      },
+    ];
+
+    return [...previewStrikes, ...events]
+      .filter((event, idx, arr) => {
+        return (
+          event.frame < durationInFrames &&
+          arr.findIndex((other) => Math.abs(other.frame - event.frame) < 45) ===
+            idx
+        );
+      })
+      .sort((a, b) => a.frame - b.frame);
   }
 
   return events;
