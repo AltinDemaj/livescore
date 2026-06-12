@@ -13,14 +13,18 @@ import { getLightningOpacity, getThunderEvents } from "./thunder";
 
 export type RainCompositionProps = {
   seed?: number;
+  /** Unique segment index (1–20) for YouTube multi-part exports — never looped. */
+  segmentIndex?: number;
 };
 
 export const RainComposition: React.FC<RainCompositionProps> = ({
   seed = DEFAULT_SEED,
+  segmentIndex = 0,
 }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
-  const thunderEvents = getThunderEvents(seed, durationInFrames);
+  const sceneSeed = seed + segmentIndex * 1_337;
+  const thunderEvents = getThunderEvents(sceneSeed, durationInFrames);
 
   const lightningOpacity = thunderEvents.reduce((maxOpacity, event) => {
     return Math.max(maxOpacity, getLightningOpacity(frame, event));
@@ -38,7 +42,11 @@ export const RainComposition: React.FC<RainCompositionProps> = ({
 
   return (
     <AbsoluteFill className="bg-[#03050a]">
-      <RainCanvas seed={seed} className="absolute inset-0 h-full w-full" />
+      <RainCanvas
+        seed={sceneSeed}
+        segmentIndex={segmentIndex}
+        className="absolute inset-0 h-full w-full"
+      />
 
       <AbsoluteFill
         style={{

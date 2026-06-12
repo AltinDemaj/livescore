@@ -21,6 +21,7 @@ export const RemotionRoot: React.FC = () => {
         height={COMPOSITION_HEIGHT}
         defaultProps={{
           seed: DEFAULT_SEED,
+          segmentIndex: 0,
         }}
       />
     </>

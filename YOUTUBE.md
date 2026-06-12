@@ -1,78 +1,58 @@
-# YouTube Channel Setup & Upload Guide
+# YouTube Monetization-Safe Export Guide
 
-I **cannot** create a YouTube channel or publish videos for you — that requires **your** Google account, identity verification, and manual upload. Follow this guide after running the 10-hour build.
+## Why we do NOT loop
 
-## 1. Create your YouTube channel (5 minutes)
+YouTube's Partner Program policies penalize **repetitive, looped, or low-effort reused content**. Stretching a short clip to 10 hours with `ffmpeg -stream_loop` can:
 
-1. On your phone or computer, go to [https://www.youtube.com](https://www.youtube.com)
-2. Sign in with your **Google account** (or create one)
-3. Tap your profile picture → **Create a channel**
-4. Choose a name, e.g. **Rain & Thunder Sleep**
-5. Add a profile picture and banner (optional)
+- Get flagged as **reused / repetitive content**
+- Block or limit **monetization**
+- Reduce distribution in recommendations
 
-## 2. Build the 10-hour video
+This project instead renders **20 unique 30-minute segments** (different seeds, lightning schedules, city layouts, rain physics) and **concatenates** them into one 10-hour file. No segment is copied.
 
-On a **desktop or powerful machine** (this takes hours):
+## Build the 10-hour video
 
 ```bash
 npm install
-
-# Renders a 10-minute master loop, then extends to 10 hours
 npm run build:youtube-10h
 ```
 
-Output file: **`public/youtube-10hours.mp4`**
+### What this does
 
-> **Why not render 10 hours directly?**  
-> 10 hours at 4K/60fps would be ~2 million frames and days of render time.  
-> Professional ambient channels loop a high-quality 10-minute segment — viewers don't notice.
+| Step | Detail |
+| --- | --- |
+| Segments | 20 × 30 minutes = **10 hours** |
+| Uniqueness | Each segment gets a unique `seed` + `segmentIndex` |
+| Output | `public/youtube-10hours-unique.mp4` |
+| Resume | Re-run the script — already-rendered segments are skipped |
 
-### Faster test (1-minute loop extended to 1 hour)
+> **Render time:** Each 30-min 1080p segment can take 1–3+ hours. Full build may take **days** on one machine. Render overnight or use multiple machines for different segment numbers.
+
+### Test with fewer segments first
 
 ```bash
-npm run render:loop-segment -- --frames=0-3599 --scale=0.35
-ffmpeg -y -stream_loop -1 -i public/loop-segment.mp4 -c copy -t 3600 public/youtube-1hour-test.mp4
+YOUTUBE_SEGMENTS=2 YOUTUBE_SEGMENT_MINUTES=5 npm run build:youtube-10h
 ```
 
-## 3. Upload to YouTube
+Produces ~10 minutes of unique content to verify before a full 10-hour build.
 
-1. Open [YouTube Studio](https://studio.youtube.com)
-2. Click **Create** → **Upload video**
-3. Select `public/youtube-10hours.mp4`
-4. Use these settings:
+## Create your channel & upload
 
-| Field | Suggested value |
-| --- | --- |
-| **Title** | Rain on Car at Night for Sleeping \| 10 Hours Thunder & Lightning |
-| **Description** | 10 hours of heavy rain on a parked car with distant city lights, thunder and lightning. Perfect for sleep, study, and relaxation. |
-| **Category** | Entertainment or Music |
-| **Audience** | Not made for kids |
-| **Tags** | rain sounds, thunder, sleep, ambient, 10 hours, rain on car |
+1. [youtube.com](https://www.youtube.com) → sign in → **Create a channel**
+2. [studio.youtube.com](https://studio.youtube.com) → **Upload** → `youtube-10hours-unique.mp4`
+3. Suggested title: **Rain on Car at Night for Sleeping | 10 Hours Thunder & Lightning**
+4. Description: mention it's 10 hours of **unique** rain and thunder (not a short loop)
 
-5. Set thumbnail (screenshot from the video at ~0:30)
-6. Visibility: **Public** or **Unlisted** for testing
-7. Click **Publish**
+## Monetization checklist
 
-## 4. Monetization (optional, later)
+- Use **original** programmatic visuals (this Remotion project ✓)
+- Use **licensed** rain/thunder audio (replace `public/audio/` placeholders)
+- Do **not** loop a short clip to fake duration ✗
+- Add a real **thumbnail** and description
+- Need **1,000 subscribers** + **4,000 watch hours** for YPP
 
-- Requires **1,000 subscribers** and **4,000 watch hours** (YouTube Partner Program)
-- Ambient/sleep channels often qualify after consistent uploads
+## Segment files
 
-## 5. Replace audio (recommended before upload)
+Intermediate renders: `public/youtube-segments/segment-001.mp4` … `segment-020.mp4`
 
-Swap placeholder files in `public/audio/` with licensed high-quality rain/thunder loops from:
-
-- [Pixabay Audio](https://pixabay.com/sound-effects/search/rain/)
-- [Freesound](https://freesound.org) (check licenses)
-
-Then re-run `npm run build:youtube-10h`.
-
-## Automated upload (advanced)
-
-YouTube Data API v3 can upload programmatically, but requires:
-
-- Google Cloud project
-- OAuth consent + your login
-- `YOUTUBE_CLIENT_ID` / `YOUTUBE_REFRESH_TOKEN` env vars
-
-This is intentionally not bundled — channel ownership must stay with you.
+These are gitignored. Keep them until concat succeeds.

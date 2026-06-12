@@ -45,6 +45,7 @@ const createParticles = (
   seed: number,
   width: number,
   height: number,
+  segmentIndex: number,
 ): RainParticle[] => {
   return Array.from({ length: PARTICLE_COUNT }, (_, index) => {
     const particleSeed = `${seed}-particle-${index}`;
@@ -53,12 +54,17 @@ const createParticles = (
     return {
       baseX: random(`${particleSeed}-x`) * width,
       initialY: random(`${particleSeed}-y`) * (height + 300) - 300,
-      speed: 20 + random(`${particleSeed}-speed`) * 38 + depth * 12,
+      speed:
+        20 +
+        random(`${particleSeed}-speed`) * 38 +
+        depth * 12 +
+        segmentIndex * 0.35,
       length: 16 + random(`${particleSeed}-length`) * 48 + depth * 20,
       thickness: 0.7 + random(`${particleSeed}-thickness`) * 1.6,
       opacity: 0.1 + random(`${particleSeed}-opacity`) * 0.35 + depth * 0.2,
       phase: random(`${particleSeed}-phase`) * Math.PI * 2,
-      windAmplitude: 8 + random(`${particleSeed}-wind`) * 22,
+      windAmplitude:
+        8 + random(`${particleSeed}-wind`) * 22 + segmentIndex * 0.8,
       depth,
     };
   });
@@ -483,11 +489,13 @@ const drawSplashes = (
 
 export type RainCanvasProps = {
   seed?: number;
+  segmentIndex?: number;
   className?: string;
 };
 
 export const RainCanvas: React.FC<RainCanvasProps> = ({
   seed = 42,
+  segmentIndex = 0,
   className,
 }) => {
   const frame = useCurrentFrame();
@@ -495,8 +503,8 @@ export const RainCanvas: React.FC<RainCanvasProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const particles = useMemo(
-    () => createParticles(seed, width, height),
-    [seed, width, height],
+    () => createParticles(seed, width, height, segmentIndex),
+    [seed, segmentIndex, width, height],
   );
 
   const thunderEvents = useMemo(

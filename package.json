@@ -11,7 +11,7 @@
     "remotion": "remotion studio src/remotion/index.ts",
     "render:local": "remotion render src/remotion/index.ts RainForSleeping public/output.mp4",
     "render:mobile-demo": "remotion render src/remotion/index.ts RainForSleeping public/mobile-demo.mp4 --frames=0-899 --scale=0.28",
-    "render:loop-segment": "remotion render src/remotion/index.ts RainForSleeping public/loop-segment.mp4 --scale=0.5",
+    "render:youtube-segment": "remotion render src/remotion/index.ts RainForSleeping public/youtube-segments/segment-test.mp4 --props='{\"seed\":1200,\"segmentIndex\":1}' --scale=0.5 --frames=0-1799",
     "build:youtube-10h": "bash scripts/build-youtube-10h.sh"
   },
   "dependencies": {
