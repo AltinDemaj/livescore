@@ -1,10 +1,18 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { random, useCurrentFrame, useVideoConfig } from "remotion";
 import {
+  generateCityscape,
+  getWindowBrightness,
+} from "@/lib/cityscape";
+import {
   getCarBodyPath,
+  getCarHoodCrease,
   getCarSceneLayout,
   getCarSurfaceY,
   getCarWindowPath,
+  getHeadlights,
+  getSideMirror,
+  getTaillights,
   getWheelSpecs,
   tracePath,
 } from "@/lib/car-scene";
@@ -100,29 +108,60 @@ const drawSky = (
   context.fillRect(0, 0, width, height);
 };
 
-const drawDistantCity = (
+const drawCityscape = (
   context: CanvasRenderingContext2D,
   width: number,
-  height: number,
   layout: ReturnType<typeof getCarSceneLayout>,
   seed: number,
+  frame: number,
+  lightningFlash: number,
 ) => {
-  context.fillStyle = "rgba(6, 10, 18, 0.85)";
-  context.fillRect(0, layout.horizonY, width, height - layout.horizonY);
+  const buildings = generateCityscape(seed, width, layout.horizonY);
 
-  for (let i = 0; i < 28; i++) {
-    const bw = 30 + random(`${seed}-bld-w-${i}`) * 90;
-    const bh = 40 + random(`${seed}-bld-h-${i}`) * 180;
-    const bx = random(`${seed}-bld-x-${i}`) * width;
-    const by = layout.horizonY - bh;
-    context.fillStyle = `rgba(${12 + random(`${seed}-bld-c-${i}`) * 20}, ${16 + random(`${seed}-bld-c2-${i}`) * 24}, ${28 + random(`${seed}-bld-c3-${i}`) * 30}, 0.9)`;
-    context.fillRect(bx, by, bw, bh);
+  context.fillStyle = "rgba(5, 8, 14, 0.92)";
+  context.fillRect(0, layout.horizonY - 8, width, layout.height - layout.horizonY + 8);
 
-    if (random(`${seed}-bld-lit-${i}`) > 0.55) {
-      context.fillStyle = "rgba(255, 220, 140, 0.35)";
-      context.fillRect(bx + bw * 0.2, by + bh * 0.2, bw * 0.15, bh * 0.08);
+  for (const building of buildings) {
+    const alpha = 0.55 + building.depth * 0.4;
+    const baseR = 10 + building.depth * 14;
+    const baseG = 12 + building.depth * 16;
+    const baseB = 20 + building.depth * 22;
+
+    if (building.kind === "house") {
+      context.fillStyle = `rgba(${baseR + 6}, ${baseG + 4}, ${baseB}, ${alpha})`;
+      context.fillRect(building.x, building.y, building.width, building.height);
+      context.fillStyle = `rgba(${18 + building.roofHue * 20}, ${14 + building.roofHue * 10}, ${20}, ${alpha})`;
+      context.beginPath();
+      context.moveTo(building.x - 4, building.y);
+      context.lineTo(building.x + building.width * 0.5, building.y - building.height * 0.18);
+      context.lineTo(building.x + building.width + 4, building.y);
+      context.closePath();
+      context.fill();
+    } else {
+      context.fillStyle = `rgba(${baseR}, ${baseG}, ${baseB}, ${alpha})`;
+      context.fillRect(building.x, building.y, building.width, building.height);
+      context.fillStyle = `rgba(6, 8, 14, ${alpha * 0.9})`;
+      context.fillRect(building.x + building.width * 0.08, building.y - 6, building.width * 0.84, 6);
+    }
+
+    for (const window of building.windows) {
+      const brightness = getWindowBrightness(window, frame, lightningFlash);
+      const r = 220 + window.warmth * 35;
+      const g = 150 + window.warmth * 70;
+      const b = 60 + window.warmth * 30;
+      context.fillStyle = `rgba(${r}, ${g}, ${b}, ${0.25 + brightness * 0.65})`;
+      context.fillRect(window.x, window.y, window.w, window.h);
+
+      context.fillStyle = `rgba(255, 230, 170, ${brightness * 0.35})`;
+      context.fillRect(window.x, window.y, window.w, window.h * 0.35);
     }
   }
+
+  const cityGlow = context.createLinearGradient(0, layout.horizonY - 120, 0, layout.horizonY + 40);
+  cityGlow.addColorStop(0, `rgba(255, 190, 100, ${0.04 + lightningFlash * 0.08})`);
+  cityGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+  context.fillStyle = cityGlow;
+  context.fillRect(0, layout.horizonY - 120, width, 160);
 };
 
 const drawWetGround = (
@@ -190,97 +229,136 @@ const drawCar = (
 ) => {
   const body = getCarBodyPath(layout);
   const windowPath = getCarWindowPath(layout);
+  const hoodCrease = getCarHoodCrease(layout);
   const wheels = getWheelSpecs(layout);
+  const mirror = getSideMirror(layout);
+  const headlights = getHeadlights(layout);
+  const taillights = getTaillights(layout);
 
   context.save();
-  context.shadowColor = "rgba(0, 0, 0, 0.65)";
-  context.shadowBlur = 35;
-  context.shadowOffsetY = 18;
+  context.shadowColor = "rgba(0, 0, 0, 0.75)";
+  context.shadowBlur = 42;
+  context.shadowOffsetY = 22;
   tracePath(context, body);
   const bodyGradient = context.createLinearGradient(
-    layout.carCenterX - layout.carScale * 250,
-    layout.carBaseY - layout.carScale * 180,
-    layout.carCenterX + layout.carScale * 250,
+    layout.carCenterX - layout.carScale * 260,
+    layout.carBaseY - layout.carScale * 190,
+    layout.carCenterX + layout.carScale * 260,
     layout.carBaseY,
   );
-  bodyGradient.addColorStop(0, `rgba(28, 34, 44, ${0.98})`);
-  bodyGradient.addColorStop(0.45, `rgba(18, 22, 30, ${0.98})`);
-  bodyGradient.addColorStop(1, "rgba(10, 12, 18, 0.98)");
+  bodyGradient.addColorStop(0, "rgba(34, 38, 48, 0.98)");
+  bodyGradient.addColorStop(0.35, "rgba(20, 24, 32, 0.98)");
+  bodyGradient.addColorStop(0.7, "rgba(12, 14, 20, 0.98)");
+  bodyGradient.addColorStop(1, "rgba(8, 9, 14, 0.98)");
   context.fillStyle = bodyGradient;
   context.fill();
   context.restore();
 
   tracePath(context, body);
   const wetSheen = context.createLinearGradient(
-    layout.carCenterX - layout.carScale * 200,
-    layout.carBaseY - layout.carScale * 160,
-    layout.carCenterX + layout.carScale * 120,
-    layout.carBaseY - layout.carScale * 40,
+    layout.carCenterX - layout.carScale * 220,
+    layout.carBaseY - layout.carScale * 175,
+    layout.carCenterX + layout.carScale * 140,
+    layout.carBaseY - layout.carScale * 30,
   );
-  wetSheen.addColorStop(0, `rgba(180, 210, 255, ${0.05 + lightningFlash * 0.18})`);
-  wetSheen.addColorStop(0.35, `rgba(120, 160, 220, ${0.18 + lightningFlash * 0.25})`);
-  wetSheen.addColorStop(0.55, "rgba(255, 255, 255, 0)");
+  wetSheen.addColorStop(0, `rgba(200, 225, 255, ${0.04 + lightningFlash * 0.22})`);
+  wetSheen.addColorStop(0.28, `rgba(140, 175, 230, ${0.22 + lightningFlash * 0.3})`);
+  wetSheen.addColorStop(0.5, "rgba(255, 255, 255, 0)");
   context.fillStyle = wetSheen;
   context.fill();
+
+  tracePath(context, hoodCrease, false);
+  context.strokeStyle = "rgba(255, 255, 255, 0.06)";
+  context.lineWidth = 1.5;
+  context.stroke();
+
+  context.fillStyle = "rgba(14, 16, 22, 0.95)";
+  context.fillRect(mirror.x, mirror.y, mirror.w, mirror.h);
+  context.fillStyle = `rgba(120, 150, 190, ${0.2 + lightningFlash * 0.25})`;
+  context.fillRect(mirror.x + 2, mirror.y + 2, mirror.w - 4, mirror.h - 4);
 
   tracePath(context, windowPath);
   const glass = context.createLinearGradient(
     layout.carCenterX,
-    layout.carBaseY - layout.carScale * 160,
+    layout.carBaseY - layout.carScale * 165,
     layout.carCenterX,
-    layout.carBaseY - layout.carScale * 80,
+    layout.carBaseY - layout.carScale * 75,
   );
-  glass.addColorStop(0, "rgba(20, 30, 48, 0.85)");
-  glass.addColorStop(1, "rgba(8, 12, 22, 0.95)");
+  glass.addColorStop(0, "rgba(24, 36, 58, 0.88)");
+  glass.addColorStop(0.5, "rgba(12, 18, 32, 0.92)");
+  glass.addColorStop(1, "rgba(6, 10, 18, 0.96)");
   context.fillStyle = glass;
   context.fill();
 
   tracePath(context, windowPath);
-  context.strokeStyle = `rgba(160, 190, 230, ${0.15 + lightningFlash * 0.35})`;
-  context.lineWidth = 2;
+  context.strokeStyle = `rgba(170, 200, 240, ${0.18 + lightningFlash * 0.4})`;
+  context.lineWidth = 2.2;
   context.stroke();
 
-  for (let i = 0; i < 12; i++) {
-    const wx = layout.carCenterX - layout.carScale * 120 + i * layout.carScale * 22;
-    const wy =
-      layout.carBaseY -
-      layout.carScale * 130 +
-      Math.sin(frame * 0.2 + i) * 2;
-    context.strokeStyle = `rgba(180, 210, 245, ${0.08 + (i % 3) * 0.04})`;
-    context.lineWidth = 1;
+  context.strokeStyle = "rgba(80, 95, 120, 0.5)";
+  context.lineWidth = 1.2;
+  context.beginPath();
+  context.moveTo(layout.carCenterX - layout.carScale * 10, layout.carBaseY - layout.carScale * 155);
+  context.lineTo(layout.carCenterX - layout.carScale * 8, layout.carBaseY - layout.carScale * 92);
+  context.stroke();
+
+  for (let i = 0; i < 16; i++) {
+    const wx = layout.carCenterX - layout.carScale * 130 + i * layout.carScale * 18;
+    const wy = layout.carBaseY - layout.carScale * 135 + Math.sin(frame * 0.18 + i) * 2;
+    context.strokeStyle = `rgba(190, 215, 245, ${0.06 + (i % 3) * 0.05})`;
+    context.lineWidth = 0.9;
     context.beginPath();
     context.moveTo(wx, wy);
-    context.lineTo(wx - 4, wy + 18 + (i % 4) * 4);
+    context.lineTo(wx - 5, wy + 16 + (i % 5) * 3);
     context.stroke();
   }
 
   for (const wheel of wheels) {
-    context.fillStyle = "rgba(6, 6, 8, 0.95)";
+    context.fillStyle = "rgba(4, 4, 6, 0.98)";
     context.beginPath();
-    context.ellipse(wheel.cx, wheel.cy, wheel.r, wheel.r * 0.88, 0, 0, Math.PI * 2);
+    context.ellipse(wheel.cx, wheel.cy, wheel.r, wheel.r * 0.9, 0, 0, Math.PI * 2);
     context.fill();
 
-    context.strokeStyle = "rgba(50, 55, 65, 0.9)";
-    context.lineWidth = layout.carScale * 8;
+    context.strokeStyle = "rgba(42, 46, 54, 0.95)";
+    context.lineWidth = layout.carScale * 9;
     context.beginPath();
-    context.ellipse(wheel.cx, wheel.cy, wheel.r * 0.62, wheel.r * 0.55, 0, 0, Math.PI * 2);
+    context.ellipse(wheel.cx, wheel.cy, wheel.r * 0.64, wheel.r * 0.56, 0, 0, Math.PI * 2);
     context.stroke();
 
-    context.fillStyle = `rgba(90, 100, 115, ${0.25 + lightningFlash * 0.2})`;
+    context.strokeStyle = "rgba(70, 75, 85, 0.7)";
+    context.lineWidth = layout.carScale * 2;
+    for (let s = 0; s < 5; s++) {
+      const angle = (s / 5) * Math.PI * 2 + frame * 0.01;
+      context.beginPath();
+      context.moveTo(wheel.cx, wheel.cy);
+      context.lineTo(wheel.cx + Math.cos(angle) * wheel.r * 0.55, wheel.cy + Math.sin(angle) * wheel.r * 0.48);
+      context.stroke();
+    }
+  }
+
+  for (const light of headlights) {
+    const glow = context.createRadialGradient(light.x, light.y, 0, light.x, light.y, light.r * 3.5);
+    glow.addColorStop(0, `rgba(255, 245, 210, ${0.35 + lightningFlash * 0.15})`);
+    glow.addColorStop(0.4, "rgba(200, 220, 255, 0.08)");
+    glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+    context.fillStyle = glow;
+    context.fillRect(light.x - light.r * 4, light.y - light.r * 4, light.r * 8, light.r * 8);
+    context.fillStyle = "rgba(255, 248, 220, 0.9)";
     context.beginPath();
-    context.ellipse(
-      wheel.cx - wheel.r * 0.15,
-      wheel.cy - wheel.r * 0.2,
-      wheel.r * 0.2,
-      wheel.r * 0.12,
-      0,
-      0,
-      Math.PI * 2,
-    );
+    context.ellipse(light.x, light.y, light.r, light.r * 0.75, 0, 0, Math.PI * 2);
     context.fill();
   }
 
-  context.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  for (const light of taillights) {
+    context.fillStyle = "rgba(180, 30, 30, 0.85)";
+    context.beginPath();
+    context.ellipse(light.x, light.y, light.r, light.r * 0.7, 0, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = "rgba(255, 80, 80, 0.35)";
+    context.fillRect(light.x - light.r * 2, light.y - light.r, light.r * 2, light.r * 2);
+  }
+
+  context.strokeStyle = "rgba(255, 255, 255, 0.1)";
   context.lineWidth = 2;
   tracePath(context, body);
   context.stroke();
@@ -463,7 +541,7 @@ export const RainCanvas: React.FC<RainCanvasProps> = ({
     );
 
     drawSky(context, width, height, lightningFlash);
-    drawDistantCity(context, width, height, layout, seed);
+    drawCityscape(context, width, layout, seed, frame, lightningFlash);
     drawWetGround(context, width, layout, frame, lightningFlash);
     drawCarReflection(context, layout, lightningFlash);
     drawRainLayer(context, particles, frame, width, height, 0, 0.45);

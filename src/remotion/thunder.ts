@@ -28,13 +28,24 @@ export const getThunderEvents = (
   let index = 0;
 
   while (frame < durationInFrames) {
+    const doubleStrike = random(`thunder-double-${seed}-${index}`) > 0.72;
+
     events.push({
       frame,
       flashDuration:
-        6 + Math.floor(random(`thunder-flash-${seed}-${index}`) * 10),
-      peakOpacity: 0.45 + random(`thunder-opacity-${seed}-${index}`) * 0.4,
-      audioVolume: 0.65 + random(`thunder-volume-${seed}-${index}`) * 0.3,
+        5 + Math.floor(random(`thunder-flash-${seed}-${index}`) * 14),
+      peakOpacity: 0.5 + random(`thunder-opacity-${seed}-${index}`) * 0.45,
+      audioVolume: 0.6 + random(`thunder-volume-${seed}-${index}`) * 0.35,
     });
+
+    if (doubleStrike && frame + 8 < durationInFrames) {
+      events.push({
+        frame: frame + 5 + Math.floor(random(`thunder-double-offset-${seed}-${index}`) * 8),
+        flashDuration: 4 + Math.floor(random(`thunder-double-flash-${seed}-${index}`) * 6),
+        peakOpacity: 0.35 + random(`thunder-double-opacity-${seed}-${index}`) * 0.35,
+        audioVolume: 0.45 + random(`thunder-double-volume-${seed}-${index}`) * 0.25,
+      });
+    }
 
     const interval =
       THUNDER_MIN_INTERVAL_FRAMES +

@@ -15,37 +15,33 @@ export const getCarSceneLayout = (
   width,
   height,
   groundY: height * 0.86,
-  horizonY: height * 0.58,
+  horizonY: height * 0.56,
   carCenterX: width * 0.5,
-  carBaseY: height * 0.86,
-  carScale: width * 0.00115,
+  carBaseY: height * 0.865,
+  carScale: width * 0.0012,
 });
 
 type Point = { x: number; y: number };
 
-const scalePoint = (
-  point: Point,
-  layout: CarSceneLayout,
-  offsetX = 0,
-  offsetY = 0,
-): Point => ({
-  x: layout.carCenterX + (point.x + offsetX) * layout.carScale,
-  y: layout.carBaseY + (point.y + offsetY) * layout.carScale,
+const scalePoint = (point: Point, layout: CarSceneLayout): Point => ({
+  x: layout.carCenterX + point.x * layout.carScale,
+  y: layout.carBaseY + point.y * layout.carScale,
 });
 
 export const getCarBodyPath = (layout: CarSceneLayout): Point[] => {
   const pts: Point[] = [
-    { x: -220, y: -95 },
-    { x: -170, y: -145 },
-    { x: -40, y: -165 },
-    { x: 120, y: -158 },
-    { x: 210, y: -125 },
-    { x: 250, y: -70 },
-    { x: 255, y: -20 },
-    { x: 235, y: 0 },
-    { x: -235, y: 0 },
-    { x: -250, y: -25 },
-    { x: -245, y: -70 },
+    { x: -235, y: -88 },
+    { x: -185, y: -148 },
+    { x: -55, y: -172 },
+    { x: 95, y: -168 },
+    { x: 185, y: -148 },
+    { x: 235, y: -108 },
+    { x: 262, y: -58 },
+    { x: 268, y: -8 },
+    { x: 248, y: 4 },
+    { x: -248, y: 4 },
+    { x: -268, y: -12 },
+    { x: -262, y: -62 },
   ];
 
   return pts.map((p) => scalePoint(p, layout));
@@ -53,16 +49,55 @@ export const getCarBodyPath = (layout: CarSceneLayout): Point[] => {
 
 export const getCarWindowPath = (layout: CarSceneLayout): Point[] => {
   const pts: Point[] = [
-    { x: -155, y: -138 },
-    { x: -35, y: -152 },
-    { x: 105, y: -145 },
-    { x: 185, y: -118 },
-    { x: 170, y: -88 },
-    { x: -120, y: -92 },
+    { x: -168, y: -142 },
+    { x: -42, y: -158 },
+    { x: 88, y: -152 },
+    { x: 178, y: -128 },
+    { x: 162, y: -94 },
+    { x: -138, y: -98 },
   ];
 
   return pts.map((p) => scalePoint(p, layout));
 };
+
+export const getCarHoodCrease = (layout: CarSceneLayout): Point[] => {
+  const pts: Point[] = [
+    { x: 95, y: -168 },
+    { x: 185, y: -148 },
+    { x: 235, y: -108 },
+    { x: 262, y: -58 },
+  ];
+
+  return pts.map((p) => scalePoint(p, layout));
+};
+
+export const getSideMirror = (layout: CarSceneLayout) => ({
+  x: layout.carCenterX - layout.carScale * 175,
+  y: layout.carBaseY - layout.carScale * 108,
+  w: layout.carScale * 22,
+  h: layout.carScale * 14,
+});
+
+export const getHeadlights = (layout: CarSceneLayout) => [
+  {
+    x: layout.carCenterX + layout.carScale * 248,
+    y: layout.carBaseY - layout.carScale * 28,
+    r: layout.carScale * 16,
+  },
+  {
+    x: layout.carCenterX + layout.carScale * 218,
+    y: layout.carBaseY - layout.carScale * 42,
+    r: layout.carScale * 11,
+  },
+];
+
+export const getTaillights = (layout: CarSceneLayout) => [
+  {
+    x: layout.carCenterX - layout.carScale * 252,
+    y: layout.carBaseY - layout.carScale * 32,
+    r: layout.carScale * 10,
+  },
+];
 
 export const tracePath = (
   context: CanvasRenderingContext2D,
@@ -120,6 +155,14 @@ export const getCarSurfaceY = (x: number, layout: CarSceneLayout): number | null
 };
 
 export const getWheelSpecs = (layout: CarSceneLayout) => [
-  { cx: layout.carCenterX - layout.carScale * 145, cy: layout.carBaseY + 2, r: layout.carScale * 42 },
-  { cx: layout.carCenterX + layout.carScale * 155, cy: layout.carBaseY + 2, r: layout.carScale * 42 },
+  {
+    cx: layout.carCenterX - layout.carScale * 148,
+    cy: layout.carBaseY + 3,
+    r: layout.carScale * 44,
+  },
+  {
+    cx: layout.carCenterX + layout.carScale * 158,
+    cy: layout.carBaseY + 3,
+    r: layout.carScale * 44,
+  },
 ];
