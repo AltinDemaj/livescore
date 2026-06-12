@@ -1,14 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "media.api-sports.io" },
-      { protocol: "https", hostname: "media-*.api-sports.io" },
-      { protocol: "https", hostname: "*.football-data.org" },
-      { protocol: "https", hostname: "flagcdn.com" },
-    ],
-  },
+  serverExternalPackages: [
+    "@remotion/bundler",
+    "@remotion/renderer",
+    "@remotion/cli",
+  ],
 };
 
 export default nextConfig;

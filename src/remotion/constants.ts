@@ -1,0 +1,12 @@
+export const COMPOSITION_ID = "RainForSleeping";
+
+export const COMPOSITION_WIDTH = 3840;
+export const COMPOSITION_HEIGHT = 2160;
+export const COMPOSITION_FPS = 60;
+export const DEFAULT_DURATION_IN_FRAMES = 18_000;
+
+export const DEFAULT_SEED = 42;
+export const PARTICLE_COUNT = 2_800;
+
+export const THUNDER_MIN_INTERVAL_FRAMES = 45 * COMPOSITION_FPS;
+export const THUNDER_MAX_INTERVAL_FRAMES = 60 * COMPOSITION_FPS;
